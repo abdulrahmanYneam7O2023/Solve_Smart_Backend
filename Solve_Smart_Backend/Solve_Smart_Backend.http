@@ -1,0 +1,6 @@
+@Solve_Smart_Backend_HostAddress = http://localhost:5200
+
+GET {{Solve_Smart_Backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
