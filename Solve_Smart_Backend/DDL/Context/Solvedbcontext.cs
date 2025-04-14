@@ -9,16 +9,17 @@ namespace Solve_Smart_Backend.DDL.Context
         public Solvedbcontext(DbContextOptions<Solvedbcontext> options) : base(options)
         {
         }
-        DbSet<Users> users { get; set; }
-        DbSet<Problem> problems { get; set; }
-        DbSet<Submission> submissions { get; set; }
-        DbSet<Best_Solution> bestsolutions { get; set; }
-        DbSet<Languages> languages { get; set; }
-        DbSet<Ai_Answer_Boot> ai_answer_boots { get; set; }
-        DbSet<Ai_Feedback> ai_feedbacks { get; set; }
-        DbSet<Users_Ai> users_ai { get; set; }
-        DbSet<UserProblem> Users_Problems { get; set; }
-        DbSet<TestCases> testCases { get; set; }
+       public DbSet<Users> users { get; set; }
+        public DbSet<Problem> problems { get; set; }
+        public DbSet<Submission> submissions { get; set; }
+        public DbSet<Best_Solution> bestsolutions { get; set; }
+         public DbSet<Languages> languages { get; set; }
+         public DbSet<Ai_Answer_Boot> ai_answer_boots { get; set; }
+        public DbSet<Ai_Feedback> ai_feedbacks { get; set; }
+        public DbSet<Users_Ai> users_ai { get; set; }
+        public DbSet<UserProblem> Users_Problems { get; set; }
+        public DbSet<TestCases> testCases { get; set; }
+        public DbSet<AdminRequest> adminRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +37,10 @@ namespace Solve_Smart_Backend.DDL.Context
                 .WithOne(l => l.languages)
                 .HasForeignKey(l => l.languageId);
 
+            modelBuilder.Entity<Users>()
+              .HasMany(b => b.AdminRequests)
+              .WithOne(l => l.User)
+              .HasForeignKey(l => l.UserId);
             //3- علاقة one-to-many  بين  Problems و TestCases
             modelBuilder.Entity<Problem>()
                 .HasMany(tc => tc.testCases)

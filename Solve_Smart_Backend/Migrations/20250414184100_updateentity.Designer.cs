@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Solve_Smart_Backend.DDL.Context;
 
@@ -11,9 +12,11 @@ using Solve_Smart_Backend.DDL.Context;
 namespace Solve_Smart_Backend.Migrations
 {
     [DbContext(typeof(Solvedbcontext))]
-    partial class SolvedbcontextModelSnapshot : ModelSnapshot
+    [Migration("20250414184100_updateentity")]
+    partial class updateentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -215,7 +218,7 @@ namespace Solve_Smart_Backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("adminRequests");
+                    b.ToTable("AdminRequest");
                 });
 
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Ai_Answer_Boot", b =>

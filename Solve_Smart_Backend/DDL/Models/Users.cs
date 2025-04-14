@@ -8,5 +8,6 @@ namespace Solve_Smart_Backend.DDL.Models
 
         public ICollection<Users_Ai> users { get; set; }
         public ICollection<UserProblem> UserProblems { get; set; }
+        public ICollection<AdminRequest> AdminRequests { get; set; }
     }
 }

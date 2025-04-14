@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Solve_Smart_Backend.DDL.Context;
 using Solve_Smart_Backend.DDL.Models;
 using Solve_Smart_Backend.DTOs;
 
@@ -17,11 +19,71 @@ namespace Solve_Smart_Backend.Controllers
     {
         private readonly UserManager<Users> _userManager;
         private readonly IConfiguration _config;
+        private readonly Solvedbcontext _context;
 
-        public AuthController(UserManager<Users> userManager, IConfiguration config)
+        public AuthController(UserManager<Users> userManager, IConfiguration config , Solvedbcontext solvedbcontext)
         {
             _userManager = userManager;
             _config = config;
+            _context = solvedbcontext;
+        }
+        [HttpPost("registr")]
+        public async Task<IActionResult> registr([FromBody] RegistrationDTO Rdto)
+        {
+            var DbEmp = new Users()
+            {
+                UserName = Rdto.UserName,
+                jobtitle = Rdto.jobtitle,
+                Email = Rdto.Email,
+
+            };
+            var res = await _userManager.CreateAsync(DbEmp, Rdto.Password);
+            if (!res.Succeeded)
+                return BadRequest(res.Errors);
+            var claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.NameIdentifier , DbEmp.Id),
+                new Claim(ClaimTypes.Role, "Admin")
+            };
+            var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"], claims: claims,
+            expires: DateTime.Now.AddMinutes(60),
+           signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"])), 
+           SecurityAlgorithms.HmacSha256)
+                                                                                                               
+           );
+            var claimsResult = await _userManager.AddClaimsAsync(DbEmp, claims);
+
+            if (!claimsResult.Succeeded)
+                return BadRequest(res.Errors);
+
+            return Ok();
+        }
+
+        //[Authorize]
+        [HttpPost("request-admin-role")]
+        public async Task<IActionResult> RequestAdminRole([FromBody] RequestAdminRoleDTO dto)
+        {
+            var user = await _userManager.FindByNameAsync(dto.UserName);
+            if (user == null)
+                return NotFound("User not found");
+
+            var existingRequest = _context.adminRequests.FirstOrDefault(r => r.UserId == user.Id && r.Status == "Pending");
+            if (existingRequest != null)
+                return BadRequest("You already have a pending request.");
+
+            var request = new AdminRequest
+            {
+                UserId = user.Id,
+                Reason = dto.Reason,
+                Status = "Pending"
+            };
+
+            _context.adminRequests.Add(request);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Request sent successfully" });
         }
 
         [HttpPost("login")]
@@ -66,25 +128,7 @@ namespace Solve_Smart_Backend.Controllers
         }
 
     
-     [Authorize] 
-        [HttpGet("me")]
-        public IActionResult GetProfile()
-        {
-            var username = User.Identity?.Name; 
-            var email = User.FindFirst(ClaimTypes.Email)?.Value; 
-            var jobtitle = User.FindFirst("jobtitle")?.Value; 
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; 
-            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList(); 
-
-            return Ok(new
-            {
-                Id = userId,
-                Username = username,
-                Email = email,
-                JobTitle = jobtitle,
-                Roles = roles
-            });
-        }
+    
 
     }
 }
