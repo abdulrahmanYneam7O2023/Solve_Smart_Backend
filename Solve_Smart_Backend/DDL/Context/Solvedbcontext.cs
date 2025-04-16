@@ -19,7 +19,7 @@ namespace Solve_Smart_Backend.DDL.Context
         public DbSet<Users_Ai> users_ai { get; set; }
         public DbSet<UserProblem> Users_Problems { get; set; }
         public DbSet<TestCases> testCases { get; set; }
-        public DbSet<AdminRequest> adminRequests { get; set; }
+      
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,10 +37,7 @@ namespace Solve_Smart_Backend.DDL.Context
                 .WithOne(l => l.languages)
                 .HasForeignKey(l => l.languageId);
 
-            modelBuilder.Entity<Users>()
-              .HasMany(b => b.AdminRequests)
-              .WithOne(l => l.User)
-              .HasForeignKey(l => l.UserId);
+         
             //3- علاقة one-to-many  بين  Problems و TestCases
             modelBuilder.Entity<Problem>()
                 .HasMany(tc => tc.testCases)

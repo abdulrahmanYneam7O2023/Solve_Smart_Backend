@@ -61,31 +61,7 @@ namespace Solve_Smart_Backend.Controllers
             return Ok();
         }
 
-        //[Authorize]
-        [HttpPost("request-admin-role")]
-        public async Task<IActionResult> RequestAdminRole([FromBody] RequestAdminRoleDTO dto)
-        {
-            var user = await _userManager.FindByNameAsync(dto.UserName);
-            if (user == null)
-                return NotFound("User not found");
-
-            var existingRequest = _context.adminRequests.FirstOrDefault(r => r.UserId == user.Id && r.Status == "Pending");
-            if (existingRequest != null)
-                return BadRequest("You already have a pending request.");
-
-            var request = new AdminRequest
-            {
-                UserId = user.Id,
-                Reason = dto.Reason,
-                Status = "Pending"
-            };
-
-            _context.adminRequests.Add(request);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Request sent successfully" });
-        }
-
+        
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] Login dto)
         {
