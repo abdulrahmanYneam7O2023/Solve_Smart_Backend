@@ -37,6 +37,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddHttpClient();
+
 
 
 // Add services to the container.
@@ -53,8 +55,18 @@ builder.Services.AddDbContext<Solvedbcontext>(options =>
 });
 
 #endregion
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
+app.UseCors("AllowAngular");
 
 
 using (var scope = app.Services.CreateScope())
