@@ -27,41 +27,58 @@ namespace Solve_Smart_Backend.Controllers
             _config = config;
             _context = solvedbcontext;
         }
-        [HttpPost("registr")]
-        public async Task<IActionResult> registr([FromBody] RegistrationDTO Rdto)
+        [HttpPost("register")]
+        public async Task<IActionResult> register([FromBody] RegistrationDTO Rdto)
         {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return BadRequest(errors);
+
+            if (Rdto.Password != Rdto.ConfirmPassword)
+            {
+                return BadRequest("Passwords do not match.");
+            }
+
+        
+            var existingUser = await _userManager.FindByEmailAsync(Rdto.Email);
+            if (existingUser != null)
+            {
+                return BadRequest("Email is already taken.");
+            }
+
+            
             var DbEmp = new Users()
             {
                 UserName = Rdto.UserName,
-                jobtitle = Rdto.jobtitle,
+                jobtitle = Rdto.Jobtitle,
                 Email = Rdto.Email,
-
             };
+
             var res = await _userManager.CreateAsync(DbEmp, Rdto.Password);
             if (!res.Succeeded)
-                return BadRequest(res.Errors);
-            var claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.NameIdentifier , DbEmp.Id),
-                new Claim(ClaimTypes.Role, "Admin")
-            };
-            var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"], claims: claims,
-            expires: DateTime.Now.AddMinutes(60),
-           signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"])), 
-           SecurityAlgorithms.HmacSha256)
-                                                                                                               
-           );
+                var errorMessages = string.Join(", ", res.Errors.Select(e => e.Description));
+                return BadRequest(errorMessages);
+            }
+
+            
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, DbEmp.Id),
+        new Claim(ClaimTypes.Role, "Admin")
+    };
+
             var claimsResult = await _userManager.AddClaimsAsync(DbEmp, claims);
-
             if (!claimsResult.Succeeded)
-                return BadRequest(res.Errors);
+            {
+                var errorMessages = string.Join(", ", claimsResult.Errors.Select(e => e.Description));
+                return BadRequest(errorMessages);
+            }
 
-            return Ok();
+            // إرجاع استجابة ناجحة عند إنشاء المستخدم
+            return Ok(new { message = "User created successfully!" });
         }
 
-        
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] Login dto)
         {

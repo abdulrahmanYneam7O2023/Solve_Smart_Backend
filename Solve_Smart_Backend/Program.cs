@@ -57,16 +57,15 @@ builder.Services.AddDbContext<Solvedbcontext>(options =>
 #endregion
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.AllowAnyOrigin() 
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
 var app = builder.Build();
-app.UseCors("AllowAngular");
 
 
 using (var scope = app.Services.CreateScope())
@@ -92,7 +91,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+
 app.UseAuthorization();
+
+app.UseCors("AllowAll");
 
 app.MapControllers();
 
