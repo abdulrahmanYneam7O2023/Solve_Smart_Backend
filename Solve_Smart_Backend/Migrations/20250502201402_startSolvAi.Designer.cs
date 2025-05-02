@@ -12,8 +12,8 @@ using Solve_Smart_Backend.DDL.Context;
 namespace Solve_Smart_Backend.Migrations
 {
     [DbContext(typeof(Solvedbcontext))]
-    [Migration("20250416221931_editdatabase")]
-    partial class editdatabase
+    [Migration("20250502201402_startSolvAi")]
+    partial class startSolvAi
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -166,6 +166,10 @@ namespace Solve_Smart_Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Best_Solution")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Constraints")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -178,93 +182,52 @@ namespace Solve_Smart_Backend.Migrations
                     b.Property<int>("DifficultyLevel")
                         .HasColumnType("int");
 
+                    b.Property<string>("TestCaseInput")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TestCaseOutput")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
-
-                    b.Property<int>("bestsolution")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.ToTable("problems");
                 });
 
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Ai_Answer_Boot", b =>
-                {
-                    b.Property<int>("AiAnswerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AiAnswerId"));
-
-                    b.Property<string>("Answer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("AiAnswerId");
-
-                    b.ToTable("ai_answer_boots");
-                });
-
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Ai_Feedback", b =>
                 {
-                    b.Property<int>("AiFeedbackId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AiFeedbackId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CorrectSolution")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Feedback")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("bit");
+
                     b.Property<int>("SubmissionId")
                         .HasColumnType("int");
 
-                    b.HasKey("AiFeedbackId");
+                    b.HasKey("Id");
 
                     b.HasIndex("SubmissionId")
                         .IsUnique();
 
                     b.ToTable("ai_feedbacks");
-                });
-
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Best_Solution", b =>
-                {
-                    b.Property<int>("best_SID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("best_SID"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Memory")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProgramId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Runtime")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("languageId")
-                        .HasColumnType("int");
-
-                    b.HasKey("best_SID");
-
-                    b.HasIndex("ProgramId")
-                        .IsUnique();
-
-                    b.HasIndex("languageId");
-
-                    b.ToTable("bestsolutions");
                 });
 
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Languages", b =>
@@ -279,7 +242,15 @@ namespace Solve_Smart_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("submissionId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("submissionSId")
+                        .HasColumnType("int");
+
                     b.HasKey("LanguagesId");
+
+                    b.HasIndex("submissionSId");
 
                     b.ToTable("languages");
                 });
@@ -292,8 +263,12 @@ namespace Solve_Smart_Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SId"));
 
-                    b.Property<int>("AiFeedbackId")
+                    b.Property<int?>("AiFeedbackId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("LanguagesId")
                         .HasColumnType("int");
@@ -304,70 +279,54 @@ namespace Solve_Smart_Backend.Migrations
                     b.Property<DateTime>("SubmissionTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("SuccessRate")
-                        .HasColumnType("int");
+                    b.Property<double?>("SuccessRate")
+                        .HasColumnType("float");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("isSuccesfull")
+                    b.Property<int>("UserProblemId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("isSuccesfull")
                         .HasColumnType("bit");
 
                     b.HasKey("SId");
 
                     b.HasIndex("LanguagesId");
 
-                    b.HasIndex("UserId", "ProblemId")
-                        .IsUnique();
+                    b.HasIndex("UserProblemId");
 
                     b.ToTable("submissions");
                 });
 
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.TestCases", b =>
+            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.UserProblem", b =>
                 {
-                    b.Property<int>("TestCaseId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TestCaseId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("TestCaseDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TestCaseName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TestCaseOutput")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("problemId")
-                        .HasColumnType("int");
-
-                    b.HasKey("TestCaseId");
-
-                    b.HasIndex("problemId");
-
-                    b.ToTable("testCases");
-                });
-
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.UserProblem", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<bool>("IsSolved")
+                        .HasColumnType("bit");
 
                     b.Property<int>("ProblemId")
                         .HasColumnType("int");
 
-                    b.Property<int>("userPId")
+                    b.Property<int>("TriesCount")
                         .HasColumnType("int");
 
-                    b.HasKey("UserId", "ProblemId");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ProblemId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Users_Problems");
                 });
@@ -441,24 +400,6 @@ namespace Solve_Smart_Backend.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Users_Ai", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AiAnswerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UsersAiId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "AiAnswerId");
-
-                    b.HasIndex("AiAnswerId");
-
-                    b.ToTable("users_ai");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -513,7 +454,7 @@ namespace Solve_Smart_Backend.Migrations
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Ai_Feedback", b =>
                 {
                     b.HasOne("Solve_Smart_Backend.DDL.Models.Submission", "Submission")
-                        .WithOne("Ai_Feedback")
+                        .WithOne("AiFeedback")
                         .HasForeignKey("Solve_Smart_Backend.DDL.Models.Ai_Feedback", "SubmissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -521,23 +462,13 @@ namespace Solve_Smart_Backend.Migrations
                     b.Navigation("Submission");
                 });
 
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Best_Solution", b =>
+            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Languages", b =>
                 {
-                    b.HasOne("Problem", "Problem")
-                        .WithOne("best_Solution")
-                        .HasForeignKey("Solve_Smart_Backend.DDL.Models.Best_Solution", "ProgramId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Solve_Smart_Backend.DDL.Models.Submission", "submission")
+                        .WithMany()
+                        .HasForeignKey("submissionSId");
 
-                    b.HasOne("Solve_Smart_Backend.DDL.Models.Languages", "languages")
-                        .WithMany("Best_Solution")
-                        .HasForeignKey("languageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Problem");
-
-                    b.Navigation("languages");
+                    b.Navigation("submission");
                 });
 
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Submission", b =>
@@ -549,25 +480,14 @@ namespace Solve_Smart_Backend.Migrations
                         .IsRequired();
 
                     b.HasOne("Solve_Smart_Backend.DDL.Models.UserProblem", "userProblem")
-                        .WithOne("submission")
-                        .HasForeignKey("Solve_Smart_Backend.DDL.Models.Submission", "UserId", "ProblemId")
+                        .WithMany("Submissions")
+                        .HasForeignKey("UserProblemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Languages");
 
                     b.Navigation("userProblem");
-                });
-
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.TestCases", b =>
-                {
-                    b.HasOne("Problem", "problems")
-                        .WithMany("testCases")
-                        .HasForeignKey("problemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("problems");
                 });
 
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.UserProblem", b =>
@@ -589,62 +509,25 @@ namespace Solve_Smart_Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Users_Ai", b =>
-                {
-                    b.HasOne("Solve_Smart_Backend.DDL.Models.Ai_Answer_Boot", "AiAnswer")
-                        .WithMany("users")
-                        .HasForeignKey("AiAnswerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Solve_Smart_Backend.DDL.Models.Users", "User")
-                        .WithMany("users")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AiAnswer");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Problem", b =>
                 {
                     b.Navigation("UserProblems");
-
-                    b.Navigation("best_Solution")
-                        .IsRequired();
-
-                    b.Navigation("testCases");
-                });
-
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Ai_Answer_Boot", b =>
-                {
-                    b.Navigation("users");
-                });
-
-            modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Languages", b =>
-                {
-                    b.Navigation("Best_Solution");
                 });
 
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Submission", b =>
                 {
-                    b.Navigation("Ai_Feedback")
+                    b.Navigation("AiFeedback")
                         .IsRequired();
                 });
 
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.UserProblem", b =>
                 {
-                    b.Navigation("submission")
-                        .IsRequired();
+                    b.Navigation("Submissions");
                 });
 
             modelBuilder.Entity("Solve_Smart_Backend.DDL.Models.Users", b =>
                 {
                     b.Navigation("UserProblems");
-
-                    b.Navigation("users");
                 });
 #pragma warning restore 612, 618
         }

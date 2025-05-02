@@ -8,6 +8,8 @@ namespace Solve_Smart_Backend.DDL.Models
         public int LanguagesId { get; set; }
         public string Name { get; set; }
 
-        public ICollection<Best_Solution> Best_Solution { get; set; }
+
+        public int submissionId { get; set; }
+        public Submission submission { get; set; }
     }
 }

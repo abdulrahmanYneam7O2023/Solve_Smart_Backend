@@ -4,20 +4,30 @@ namespace Solve_Smart_Backend.DTOs
 {
     public class RegistrationDTO
     {
-        [Required(ErrorMessage = "UserName is required")]
-        [RegularExpression(@"^[a-zA-Z0-9\s]+$", ErrorMessage = "Name can only contain letters, numbers, and spaces.")]
+        [Required(ErrorMessage = "اسم المستخدم مطلوب")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "يجب أن يكون اسم المستخدم بين 3 و 50 حرفًا")]
+        [RegularExpression(@"^[a-zA-Z0-9\s]+$", ErrorMessage = "اسم المستخدم يمكن أن يحتوي على أحرف وأرقام ومسافات فقط")]
         public string UserName { get; set; }
 
-        [Required(ErrorMessage = "Email is required")]
+        [Required(ErrorMessage = "البريد الإلكتروني مطلوب")]
+        [EmailAddress(ErrorMessage = "البريد الإلكتروني غير صحيح")]
         public string Email { get; set; }
-        [Required(ErrorMessage = "password is required")]
-        public string Password { get; set; }
-        [Required(ErrorMessage = "jobtitle is required")]
 
-      
-        [Compare("Password", ErrorMessage = "Passwords do not match")]
+        [Required(ErrorMessage = "كلمة المرور مطلوبة")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "يجب أن تكون كلمة المرور 6 أحرف على الأقل")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$",
+            ErrorMessage = "يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم واحد على الأقل")]
+        public string Password { get; set; }
+
+        [Required(ErrorMessage = "تأكيد كلمة المرور مطلوب")]
+        [Compare("Password", ErrorMessage = "كلمة المرور وتأكيدها غير متطابقين")]
         public string ConfirmPassword { get; set; }
 
+        [Required(ErrorMessage = "المسمى الوظيفي مطلوب")]
+        [StringLength(100, ErrorMessage = "المسمى الوظيفي لا يمكن أن يتجاوز 100 حرف")]
         public string Jobtitle { get; set; }
+
+        [Phone(ErrorMessage = "رقم الهاتف غير صحيح")]
+        public string PhoneNumber { get; set; }
     }
 }

@@ -15,70 +15,98 @@ namespace Solve_Smart_Backend.Controllers
         private readonly UserManager<Users> _userManager;
         private readonly IConfiguration _config;
         private readonly Solvedbcontext _context;
+
         public ProblemController(UserManager<Users> userManager, IConfiguration config, Solvedbcontext solvedbcontext)
         {
             _config = config;
             _userManager = userManager;
             _context = solvedbcontext;
         }
+
         [HttpPost("addProblem")]
-        public async Task<IActionResult> registr([FromBody] ProblemDto problemDto)
+        public async Task<IActionResult> AddProblem([FromBody] ProblemDto problemDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var DbEmp = new Problem()
             {
                 Title = problemDto.Title,
                 Description = problemDto.Description,
                 Constraints = problemDto.Constraints,
-                DifficultyLevel = problemDto.DifficultyLevel
+                DifficultyLevel = problemDto.DifficultyLevel,
+                TestCaseInput = problemDto.TestCaseInput,
+                TestCaseOutput = problemDto.TestCaseOutput,
+                Best_Solution = problemDto.Best_Solution
             };
+
             await _context.problems.AddAsync(DbEmp);
             await _context.SaveChangesAsync();
-            return Ok();
+
+            return Ok(new { id = DbEmp.Id, message = "تمت إضافة المشكلة بنجاح" });
         }
+
         [HttpGet("getProblems")]
-        public async Task<IActionResult> getProblems()
+        public async Task<IActionResult> GetProblems()
         {
             var problems = await _context.problems.ToListAsync();
             return Ok(problems);
         }
+
         [HttpGet("getProblem/{id}")]
-        public async Task<IActionResult> getProblem(int id)
+        public async Task<IActionResult> GetProblem(int id)
         {
             var problem = await _context.problems.FindAsync(id);
             if (problem == null)
             {
-                return NotFound("cant found this Problem");
+                return NotFound("لم يتم العثور على هذه المشكلة");
             }
             return Ok(problem);
         }
+
         [HttpPut("updateProblem/{id}")]
-        public async Task<IActionResult> updateProblem(int id, [FromBody] ProblemDto problemDto)
+        public async Task<IActionResult> UpdateProblem(int id, [FromBody] ProblemDto problemDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var problem = await _context.problems.FindAsync(id);
             if (problem == null)
             {
-                return NotFound("cant found this Problem");
+                return NotFound("لم يتم العثور على هذه المشكلة");
             }
+
             problem.Title = problemDto.Title;
             problem.Description = problemDto.Description;
             problem.Constraints = problemDto.Constraints;
             problem.DifficultyLevel = problemDto.DifficultyLevel;
+            problem.TestCaseInput = problemDto.TestCaseInput;
+            problem.TestCaseOutput = problemDto.TestCaseOutput;
+            problem.Best_Solution = problemDto.Best_Solution;
 
             _context.problems.Update(problem);
             await _context.SaveChangesAsync();
-            return Ok();
+
+            return Ok(new { message = "تم تحديث المشكلة بنجاح" });
         }
+
         [HttpDelete("deleteProblem/{id}")]
-        public async Task<IActionResult> deleteProblem(int id)
+        public async Task<IActionResult> DeleteProblem(int id)
         {
             var problem = await _context.problems.FindAsync(id);
             if (problem == null)
             {
-                return NotFound("cant found this Problem");
+                return NotFound("لم يتم العثور على هذه المشكلة");
             }
+
             _context.problems.Remove(problem);
             await _context.SaveChangesAsync();
-            return Ok();
+
+            return Ok(new { message = "تم حذف المشكلة بنجاح" });
         }
     }
 }

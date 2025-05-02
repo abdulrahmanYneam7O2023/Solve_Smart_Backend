@@ -6,24 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Solve_Smart_Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class itit : Migration
+    public partial class startSolvAi : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "ai_answer_boots",
-                columns: table => new
-                {
-                    AiAnswerId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Answer = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ai_answer_boots", x => x.AiAnswerId);
-                });
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -65,19 +52,6 @@ namespace Solve_Smart_Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "languages",
-                columns: table => new
-                {
-                    LanguagesId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_languages", x => x.LanguagesId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "problems",
                 columns: table => new
                 {
@@ -87,7 +61,9 @@ namespace Solve_Smart_Backend.Migrations
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Constraints = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     DifficultyLevel = table.Column<int>(type: "int", nullable: false),
-                    bestsolution = table.Column<int>(type: "int", nullable: false)
+                    TestCaseInput = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TestCaseOutput = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Best_Solution = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -201,92 +177,19 @@ namespace Solve_Smart_Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "users_ai",
-                columns: table => new
-                {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AiAnswerId = table.Column<int>(type: "int", nullable: false),
-                    UsersAiId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_users_ai", x => new { x.UserId, x.AiAnswerId });
-                    table.ForeignKey(
-                        name: "FK_users_ai_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_users_ai_ai_answer_boots_AiAnswerId",
-                        column: x => x.AiAnswerId,
-                        principalTable: "ai_answer_boots",
-                        principalColumn: "AiAnswerId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "bestsolutions",
-                columns: table => new
-                {
-                    best_SID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Memory = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Runtime = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProgramId = table.Column<int>(type: "int", nullable: false),
-                    languageId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_bestsolutions", x => x.best_SID);
-                    table.ForeignKey(
-                        name: "FK_bestsolutions_languages_languageId",
-                        column: x => x.languageId,
-                        principalTable: "languages",
-                        principalColumn: "LanguagesId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_bestsolutions_problems_ProgramId",
-                        column: x => x.ProgramId,
-                        principalTable: "problems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "testCases",
-                columns: table => new
-                {
-                    TestCaseId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TestCaseName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TestCaseDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TestCaseOutput = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    problemId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_testCases", x => x.TestCaseId);
-                    table.ForeignKey(
-                        name: "FK_testCases_problems_problemId",
-                        column: x => x.problemId,
-                        principalTable: "problems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users_Problems",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProblemId = table.Column<int>(type: "int", nullable: false),
-                    userPId = table.Column<int>(type: "int", nullable: false)
+                    TriesCount = table.Column<int>(type: "int", nullable: false),
+                    IsSolved = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users_Problems", x => new { x.UserId, x.ProblemId });
+                    table.PrimaryKey("PK_Users_Problems", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Users_Problems_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -302,53 +205,66 @@ namespace Solve_Smart_Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ai_feedbacks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SubmissionId = table.Column<int>(type: "int", nullable: false),
+                    IsCorrect = table.Column<bool>(type: "bit", nullable: false),
+                    Feedback = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CorrectSolution = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ai_feedbacks", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "languages",
+                columns: table => new
+                {
+                    LanguagesId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    submissionId = table.Column<int>(type: "int", nullable: false),
+                    submissionSId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_languages", x => x.LanguagesId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "submissions",
                 columns: table => new
                 {
                     SId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    isSuccesfull = table.Column<bool>(type: "bit", nullable: false),
-                    SuccessRate = table.Column<int>(type: "int", nullable: false),
+                    isSuccesfull = table.Column<bool>(type: "bit", nullable: true),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SuccessRate = table.Column<double>(type: "float", nullable: true),
                     SubmissionTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LanguagesId = table.Column<int>(type: "int", nullable: false),
-                    AiFeedbackId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProblemId = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProblemId = table.Column<int>(type: "int", nullable: false),
+                    AiFeedbackId = table.Column<int>(type: "int", nullable: true),
+                    UserProblemId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_submissions", x => x.SId);
                     table.ForeignKey(
-                        name: "FK_submissions_Users_Problems_UserId_ProblemId",
-                        columns: x => new { x.UserId, x.ProblemId },
+                        name: "FK_submissions_Users_Problems_UserProblemId",
+                        column: x => x.UserProblemId,
                         principalTable: "Users_Problems",
-                        principalColumns: new[] { "UserId", "ProblemId" },
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_submissions_languages_LanguagesId",
                         column: x => x.LanguagesId,
                         principalTable: "languages",
                         principalColumn: "LanguagesId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ai_feedbacks",
-                columns: table => new
-                {
-                    AiFeedbackId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Feedback = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SubmissionId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ai_feedbacks", x => x.AiFeedbackId);
-                    table.ForeignKey(
-                        name: "FK_ai_feedbacks_submissions_SubmissionId",
-                        column: x => x.SubmissionId,
-                        principalTable: "submissions",
-                        principalColumn: "SId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -398,15 +314,9 @@ namespace Solve_Smart_Backend.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_bestsolutions_languageId",
-                table: "bestsolutions",
-                column: "languageId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_bestsolutions_ProgramId",
-                table: "bestsolutions",
-                column: "ProgramId",
-                unique: true);
+                name: "IX_languages_submissionSId",
+                table: "languages",
+                column: "submissionSId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_submissions_LanguagesId",
@@ -414,30 +324,43 @@ namespace Solve_Smart_Backend.Migrations
                 column: "LanguagesId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_submissions_UserId_ProblemId",
+                name: "IX_submissions_UserProblemId",
                 table: "submissions",
-                columns: new[] { "UserId", "ProblemId" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_testCases_problemId",
-                table: "testCases",
-                column: "problemId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_users_ai_AiAnswerId",
-                table: "users_ai",
-                column: "AiAnswerId");
+                column: "UserProblemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Problems_ProblemId",
                 table: "Users_Problems",
                 column: "ProblemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Problems_UserId",
+                table: "Users_Problems",
+                column: "UserId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ai_feedbacks_submissions_SubmissionId",
+                table: "ai_feedbacks",
+                column: "SubmissionId",
+                principalTable: "submissions",
+                principalColumn: "SId",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_languages_submissions_submissionSId",
+                table: "languages",
+                column: "submissionSId",
+                principalTable: "submissions",
+                principalColumn: "SId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_languages_submissions_submissionSId",
+                table: "languages");
+
             migrationBuilder.DropTable(
                 name: "ai_feedbacks");
 
@@ -457,22 +380,10 @@ namespace Solve_Smart_Backend.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "bestsolutions");
-
-            migrationBuilder.DropTable(
-                name: "testCases");
-
-            migrationBuilder.DropTable(
-                name: "users_ai");
-
-            migrationBuilder.DropTable(
-                name: "submissions");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "ai_answer_boots");
+                name: "submissions");
 
             migrationBuilder.DropTable(
                 name: "Users_Problems");

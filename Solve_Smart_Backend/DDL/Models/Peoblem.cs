@@ -20,9 +20,10 @@ public class Problem
     [Required]
     public DifficultyLevel DifficultyLevel { get; set; }
 
-    public int bestsolution { get; set; }
-    public Best_Solution best_Solution { get; set; }
+    public string TestCaseInput { get; set; }
+    public string TestCaseOutput { get; set; }
 
-    public ICollection<TestCases> testCases { get; set; }
+    public string Best_Solution { get; set; }
+
     public ICollection<UserProblem> UserProblems { get; set; }
 }

@@ -5,22 +5,30 @@ namespace Solve_Smart_Backend.DTOs
 {
     public class ProblemDto
     {
-        
-        public int Id { get; set; }
 
-        [Required]
-        [MaxLength(150)]
+        [Required(ErrorMessage = "عنوان المشكلة مطلوب")]
+        
         public string Title { get; set; }
 
-        [Required]
-        [MaxLength(1000)]
+        [Required(ErrorMessage = "وصف المشكلة مطلوب")]
+       
         public string Description { get; set; }
 
-        [MaxLength(500)]
+       
         public string? Constraints { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "مستوى الصعوبة مطلوب")]
         public DifficultyLevel DifficultyLevel { get; set; }
+
+        [Required]
+        public string TestCaseInput { get; set; }
+
+        [Required]
+        public string TestCaseOutput { get; set; }
+
+        [Required]
+        public string Best_Solution { get; set; }
+
 
     }
 }
