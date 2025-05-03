@@ -46,6 +46,14 @@ namespace Solve_Smart_Backend.Service
                     throw new ArgumentNullException(nameof(code), "Code cannot be empty.");
                 }
 
+                // تنظيف الكود المدخل
+                code = code.Trim();
+                if (code.StartsWith("\"") && code.EndsWith("\""))
+                {
+                    code = code.Substring(1, code.Length - 2);
+                }
+                code = code.Replace("\\\"", "\"");
+
                 var language = await _context.languages.FindAsync(languageId);
                 if (language == null)
                 {
@@ -58,6 +66,16 @@ namespace Solve_Smart_Backend.Service
                 {
                     throw new Exception("المشكلة غير موجودة");
                 }
+
+                // تعيين اسم اللغة بناءً على languageId
+                string languageName = languageId switch
+                {
+                    1 => "csharp",
+                    2 => "java",
+                    3 => "python",
+                    4 => "cpp",
+                    _ => language.Name.ToLower()
+                };
 
                 var prompt = $@"أنت مبرمج خبير ومقيم للكود. قم بتقييم هذا الكود وتحديد ما إذا كان يحل المشكلة المذكورة بشكل صحيح.
 
@@ -72,15 +90,20 @@ namespace Solve_Smart_Backend.Service
 المخرجات المتوقعة: {problem.TestCaseOutput ?? "غير متوفر"}
 
 الكود المقدم (بلغة {language.Name}):
-```
+```{languageName}
 {code}
 ```
 
 قم بتقييم الكود وتقديم النتائج بالتنسيق التالي:
-1. يجب أن تبدأ بـ 'CORRECT' أو 'INCORRECT' بناءً على ما إذا كان الكود يحل المشكلة بشكل صحيح ويجتاز حالات الاختبار.
-2. قدم تقييمًا عدديًا لمستوى صحة الحل (Success Rate) من 1 إلى 10 وعادي تستخدم أعداد كسرية ، حيث 10 تعني حل مثالي و1 تعني حل غير صحيح تمامًا.
-3. إذا كان الكود صحيحًا (CORRECT)، لا تقدم تعليقًا مفصلاً أو حلاً صحيحًا، فقط اكتب 'الكود صحيح'.
-4. إذا كان الكود غير صحيح (INCORRECT)، قدم تعليقًا مفصلاً عن الكود، بما في ذلك نقاط القوة والضعف والتحسينات المحتملة، وقدم حلاً صحيحًا للمشكلة بنفس اللغة.";
+1. يبدأ بـ 'CORRECT' أو 'INCORRECT' بناءً على ما إذا كان الكود يحل المشكلة بشكل صحيح ويجتاز حالات الاختبار.
+2. قدم تقييمًا عدديًا لمستوى صحة الحل (Success Rate) من 1 إلى 10 (يمكن استخدام أعداد كسرية)، حيث 10 تعني حل مثالي و1 تعني حل غير صحيح تمامًا.
+3. إذا كان الكود صحيحًا (CORRECT)، اكتب فقط 'الكود صحيح' بدون تعليقات إضافية أو حل صحيح.
+4. إذا كان الكود غير صحيح (INCORRECT)، قدم تعليقًا واضحاً ومختصر باللغة العربية يتضمن:
+   - التقييم: شرح لماذا الكود غير صحيح.
+   - نقاط القوة: أي جوانب إيجابية في الكود.
+   - نقاط الضعف: المشاكل أو العيوب في الكود.
+   - تحسينات محتملة: اقتراحات لتحسين الكود.
+   - الحل الصحيح: قدم الحل الصحيح في نفس اللغة داخل code block (```).";
 
                 var requestBody = new
                 {
@@ -150,29 +173,14 @@ namespace Solve_Smart_Backend.Service
         {
             var result = new AiEvaluationResult();
 
+            // التحقق من إذا كان الكود صحيح
             result.IsCorrect = aiMessage.StartsWith("CORRECT", StringComparison.OrdinalIgnoreCase);
 
-            var successRateStart = aiMessage.IndexOf("2.");
-            var feedbackStart = aiMessage.IndexOf("3.");
-            var solutionStart = aiMessage.IndexOf("4.");
-
-            if (successRateStart >= 0)
-            {
-                var successRateEnd = feedbackStart > 0 ? feedbackStart : (solutionStart > 0 ? solutionStart : aiMessage.Length);
-                var successRateText = aiMessage.Substring(successRateStart + 2, successRateEnd - successRateStart - 2).Trim();
-                if (double.TryParse(successRateText, out var successRate))
-                {
-                    result.SuccessRate = Math.Clamp(successRate, 1.0, 10.0);
-                }
-                else
-                {
-                    result.SuccessRate = result.IsCorrect ? 10.0 : 1.0; // Fallback
-                }
-            }
-            else
-            {
-                result.SuccessRate = result.IsCorrect ? 10.0 : 1.0; // Fallback
-            }
+            // استخراج Success Rate
+            var successRateMatch = System.Text.RegularExpressions.Regex.Match(aiMessage, @"2\.\s*(\d+(\.\d+)?)");
+            result.SuccessRate = successRateMatch.Success
+                ? Math.Clamp(double.Parse(successRateMatch.Groups[1].Value), 1.0, 10.0)
+                : (result.IsCorrect ? 10.0 : 1.0);
 
             if (result.IsCorrect)
             {
@@ -181,39 +189,40 @@ namespace Solve_Smart_Backend.Service
             }
             else
             {
-                if (feedbackStart >= 0)
+                // استخراج Feedback و CorrectSolution من النص الكامل
+                result.Feedback = aiMessage;
+
+                // استخراج CorrectSolution من code block في النص
+                var codeBlockStart = aiMessage.LastIndexOf("```");
+                var codeBlockEnd = aiMessage.LastIndexOf("```", codeBlockStart - 1);
+                if (codeBlockStart > codeBlockEnd && codeBlockEnd >= 0)
                 {
-                    if (solutionStart > feedbackStart)
+                    result.CorrectSolution = aiMessage
+                        .Substring(codeBlockEnd + 3, codeBlockStart - codeBlockEnd - 3)
+                        .Trim();
+                }
+                else
+                {
+                    // Fallback: إذا مافيش code block، جرب نستخرج النص بعد "الحل الصحيح"
+                    var solutionStart = aiMessage.IndexOf("- الحل الصحيح:");
+                    if (solutionStart >= 0)
                     {
-                        result.Feedback = aiMessage.Substring(feedbackStart, solutionStart - feedbackStart).Trim();
+                        result.CorrectSolution = aiMessage.Substring(solutionStart + 14).Trim();
                     }
                     else
                     {
-                        result.Feedback = aiMessage.Substring(feedbackStart).Trim();
+                        result.CorrectSolution = string.Empty;
                     }
                 }
-                else
-                {
-                    result.Feedback = aiMessage;
-                }
 
-                if (solutionStart >= 0)
+                // تنظيف Feedback عشان ميتضمنش الحل الصحيح
+                if (!string.IsNullOrEmpty(result.CorrectSolution))
                 {
-                    result.CorrectSolution = aiMessage.Substring(solutionStart).Trim();
-
-                    var codeStart = result.CorrectSolution.IndexOf("```");
-                    if (codeStart >= 0)
+                    var solutionIndex = result.Feedback.IndexOf(result.CorrectSolution);
+                    if (solutionIndex >= 0)
                     {
-                        var codeEnd = result.CorrectSolution.IndexOf("```", codeStart + 3);
-                        if (codeEnd > codeStart)
-                        {
-                            result.CorrectSolution = result.CorrectSolution.Substring(codeStart + 3, codeEnd - codeStart - 3).Trim();
-                        }
+                        result.Feedback = result.Feedback.Substring(0, solutionIndex).Trim();
                     }
-                }
-                else
-                {
-                    result.CorrectSolution = string.Empty;
                 }
             }
 

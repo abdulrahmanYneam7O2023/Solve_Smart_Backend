@@ -32,17 +32,7 @@ namespace Solve_Smart_Backend.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
-        {
-            var user = await _userManager.FindByNameAsync(model.Username);
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
-            {
-                var token = GenerateJwtToken(user);
-                return Ok(new { token });
-            }
-            return Unauthorized(new { message = "Invalid username or password" });
-        }
+      
 
         private string GenerateJwtToken(IdentityUser user)
         {
