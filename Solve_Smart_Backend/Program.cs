@@ -1,6 +1,7 @@
 ﻿    using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Identity;
-    using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
     using Microsoft.IdentityModel.Tokens;
     using Solve_Smart_Backend.DDL.Context;
     using Solve_Smart_Backend.DDL.Models;
@@ -73,11 +74,18 @@ builder.Services.AddHttpClient<IAiService, AiService>();
 
 
 
-    // Add services to the container.
+// Add services to the container.
 
-    builder.Services.AddControllers();
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddControllers()
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true;
+
+
+});
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
     #region DB
 
@@ -96,8 +104,9 @@ builder.Services.AddHttpClient<IAiService, AiService>();
                   .AllowAnyHeader();
         });
     });
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-    var app = builder.Build();
+var app = builder.Build();
 
 
 using (var scope = app.Services.CreateScope())
