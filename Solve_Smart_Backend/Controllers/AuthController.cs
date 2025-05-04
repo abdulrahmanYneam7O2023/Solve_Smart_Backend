@@ -57,30 +57,29 @@ namespace Solve_Smart_Backend.Controllers
                 return Unauthorized("بيانات الدخول غير صحيحة");
             }
 
-            // إعادة تعيين عداد محاولات الدخول الفاشلة
+          
             await _userManager.ResetAccessFailedCountAsync(user);
 
-            // الحصول على الأدوار والمطالبات
+           
             var userRoles = await _userManager.GetRolesAsync(user);
             var userClaims = await _userManager.GetClaimsAsync(user);
 
-            // إنشاء قائمة المطالبات
+            
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim("jobtitle", user.jobtitle ?? ""),
                 new Claim("phoneNumber", user.PhoneNumber ?? "")
             };
 
-            // إضافة الأدوار كمطالبات
+           
             foreach (var role in userRoles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            // إضافة المطالبات المخصصة
+       
             foreach (var claim in userClaims)
             {
                 if (!claims.Any(c => c.Type == claim.Type && c.Value == claim.Value))
@@ -89,20 +88,19 @@ namespace Solve_Smart_Backend.Controllers
                 }
             }
 
-            // الحصول على مفتاح التشفير
+          
             var jwtSettings = _configuration.GetSection("Jwt");
             var secretKey = jwtSettings["Key"];
             var secretKeyInBytes = Encoding.UTF8.GetBytes(secretKey);
             var key = new SymmetricSecurityKey(secretKeyInBytes);
 
-            // تحديد طريقة التوقيع
+        
             var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            // تحديد وقت انتهاء الصلاحية
             var tokenValidityMinutes = int.Parse(jwtSettings["TokenvalidityMinutes"] ?? "30");
             var expiryTime = DateTime.Now.AddMinutes(tokenValidityMinutes);
 
-            // إنشاء التوكن
+           
             var jwt = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
@@ -112,24 +110,16 @@ namespace Solve_Smart_Backend.Controllers
                 signingCredentials: signingCredentials
             );
 
-            // كتابة التوكن كسلسلة نصية
+           
             var tokenHandler = new JwtSecurityTokenHandler();
             string tokenString = tokenHandler.WriteToken(jwt);
 
-            // إرجاع التوكن وبيانات المستخدم
+          
             return Ok(new TokenResponseDTO
             {
                 Token = tokenString,
                 ExpiryDate = expiryTime,
-                User = new UserDTO
-                {
-                    Id = user.Id,
-                    Username = user.UserName,
-                    Email = user.Email,
-                    Jobtitle = user.jobtitle,
-                    PhoneNumber = user.PhoneNumber,
-                    Roles = userRoles.ToList()
-                }
+                
             });
         }
 
@@ -143,11 +133,6 @@ namespace Solve_Smart_Backend.Controllers
                 return BadRequest(errors);
             }
 
-            if (registerDTO.Password != registerDTO.ConfirmPassword)
-            {
-                return BadRequest("كلمات المرور غير متطابقة.");
-            }
-
             var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
             if (existingUser != null)
             {
@@ -158,9 +143,8 @@ namespace Solve_Smart_Backend.Controllers
             {
                 UserName = registerDTO.UserName,
                 Email = registerDTO.Email,
-                jobtitle = registerDTO.Jobtitle,
                 PhoneNumber = registerDTO.PhoneNumber,
-                EmailConfirmed = true // يمكن تغييره إذا كنت تريد تأكيد البريد الإلكتروني
+                EmailConfirmed = true 
             };
 
             var creationResult = await _userManager.CreateAsync(newUser, registerDTO.Password);
@@ -170,26 +154,23 @@ namespace Solve_Smart_Backend.Controllers
                 return BadRequest(errorMessages);
             }
 
-            // إنشاء المطالبات للمستخدم
+          
             var userClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, newUser.Id),
                 new Claim(ClaimTypes.Email, newUser.Email),
                 new Claim(ClaimTypes.Name, newUser.UserName),
                   new Claim(ClaimTypes.Role, registerDTO.UserName),
-                new Claim("Jobtitle", registerDTO.Jobtitle),
             };
 
-            // إضافة المطالبات للمستخدم
+           
             var claimsResult = await _userManager.AddClaimsAsync(newUser, userClaims);
             if (!claimsResult.Succeeded)
             {
                 var errorMessages = string.Join(", ", claimsResult.Errors.Select(e => e.Description));
                 return BadRequest(errorMessages);
             }
-
-            // إضافة المستخدم إلى دور "User"
-            await _userManager.AddToRoleAsync(newUser, "User");
+            
 
             return Ok(new { message = "تم إنشاء المستخدم بنجاح!", userId = newUser.Id });
         }
@@ -212,15 +193,7 @@ namespace Solve_Smart_Backend.Controllers
 
             var roles = await _userManager.GetRolesAsync(user);
 
-            return Ok(new UserDTO
-            {
-                Id = user.Id,
-                Username = user.UserName,
-                Email = user.Email,
-                Jobtitle = user.jobtitle,
-                PhoneNumber = user.PhoneNumber,
-                Roles = roles.ToList()
-            });
+            return Ok();
 
         }
     }

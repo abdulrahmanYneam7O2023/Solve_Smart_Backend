@@ -11,6 +11,5 @@ namespace Solve_Smart_Backend.DTOs
         [Required(ErrorMessage = "كلمة المرور مطلوبة")]
         public string Password { get; set; }
 
-        public bool RememberMe { get; set; }
     }
 }

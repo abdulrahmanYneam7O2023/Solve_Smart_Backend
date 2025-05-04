@@ -16,19 +16,19 @@ using System.Text;
 
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
 {
-    // إعدادات كلمة المرور
+
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
 
-    // إعدادات تأمين الحساب
+    
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
 
-    // إعدادات المستخدم
+
     options.User.RequireUniqueEmail = true;
 }).AddEntityFrameworkStores<Solvedbcontext>()
 .AddDefaultTokenProviders();
@@ -77,8 +77,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Manager", policy =>
         policy
-        .RequireClaim(ClaimTypes.Role, "Manager")
-        .RequireClaim("Jobtitle", "Management"));
+        .RequireClaim(ClaimTypes.Role, "Manager"));
 
 
 });
@@ -89,7 +88,7 @@ builder.Services.AddHttpClient<IAiService, AiService>();
 
 
 
-// Add services to the container.
+
 
 builder.Services.AddControllers()
 .AddJsonOptions(options =>

@@ -19,13 +19,6 @@ namespace Solve_Smart_Backend.DTOs
             ErrorMessage = "يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم واحد على الأقل")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "تأكيد كلمة المرور مطلوب")]
-        [Compare("Password", ErrorMessage = "كلمة المرور وتأكيدها غير متطابقين")]
-        public string ConfirmPassword { get; set; }
-
-        [Required(ErrorMessage = "المسمى الوظيفي مطلوب")]
-        [StringLength(100, ErrorMessage = "المسمى الوظيفي لا يمكن أن يتجاوز 100 حرف")]
-        public string Jobtitle { get; set; }
 
         [Phone(ErrorMessage = "رقم الهاتف غير صحيح")]
         public string PhoneNumber { get; set; }

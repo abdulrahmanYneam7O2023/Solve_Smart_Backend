@@ -12,7 +12,7 @@ using Solve_Smart_Backend.DDL.Context;
 namespace Solve_Smart_Backend.Migrations
 {
     [DbContext(typeof(Solvedbcontext))]
-    [Migration("20250502201402_startSolvAi")]
+    [Migration("20250504032121_startSolvAi")]
     partial class startSolvAi
     {
         /// <inheritdoc />
@@ -382,10 +382,6 @@ namespace Solve_Smart_Backend.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("jobtitle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

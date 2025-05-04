@@ -67,7 +67,7 @@ namespace Solve_Smart_Backend.Service
                     throw new Exception("المشكلة غير موجودة");
                 }
 
-                // تعيين اسم اللغة بناءً على languageId
+                
                 string languageName = languageId switch
                 {
                     1 => "csharp",
@@ -173,10 +173,9 @@ namespace Solve_Smart_Backend.Service
         {
             var result = new AiEvaluationResult();
 
-            // التحقق من إذا كان الكود صحيح
             result.IsCorrect = aiMessage.StartsWith("CORRECT", StringComparison.OrdinalIgnoreCase);
 
-            // استخراج Success Rate
+            
             var successRateMatch = System.Text.RegularExpressions.Regex.Match(aiMessage, @"2\.\s*(\d+(\.\d+)?)");
             result.SuccessRate = successRateMatch.Success
                 ? Math.Clamp(double.Parse(successRateMatch.Groups[1].Value), 1.0, 10.0)
@@ -189,10 +188,10 @@ namespace Solve_Smart_Backend.Service
             }
             else
             {
-                // استخراج Feedback و CorrectSolution من النص الكامل
+                
                 result.Feedback = aiMessage;
 
-                // استخراج CorrectSolution من code block في النص
+               
                 var codeBlockStart = aiMessage.LastIndexOf("```");
                 var codeBlockEnd = aiMessage.LastIndexOf("```", codeBlockStart - 1);
                 if (codeBlockStart > codeBlockEnd && codeBlockEnd >= 0)
@@ -203,7 +202,7 @@ namespace Solve_Smart_Backend.Service
                 }
                 else
                 {
-                    // Fallback: إذا مافيش code block، جرب نستخرج النص بعد "الحل الصحيح"
+                   
                     var solutionStart = aiMessage.IndexOf("- الحل الصحيح:");
                     if (solutionStart >= 0)
                     {
@@ -215,7 +214,6 @@ namespace Solve_Smart_Backend.Service
                     }
                 }
 
-                // تنظيف Feedback عشان ميتضمنش الحل الصحيح
                 if (!string.IsNullOrEmpty(result.CorrectSolution))
                 {
                     var solutionIndex = result.Feedback.IndexOf(result.CorrectSolution);
