@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace Solve_Smart_Backend.Controllers
             _context = solvedbcontext;
         }
 
+        [Authorize(Policy = "Manager")]
         [HttpPost("addProblem")]
         public async Task<IActionResult> AddProblem([FromBody] ProblemDto problemDto)
         {
@@ -48,6 +50,7 @@ namespace Solve_Smart_Backend.Controllers
             return Ok(new { id = DbEmp.Id, message = "تمت إضافة المشكلة بنجاح" });
         }
 
+        [Authorize(Policy = "Manager")]
         [HttpGet("getProblems")]
         public async Task<IActionResult> GetProblems()
         {
@@ -55,6 +58,7 @@ namespace Solve_Smart_Backend.Controllers
             return Ok(problems);
         }
 
+        [Authorize(Policy = "Manager")]
         [HttpGet("getProblem/{id}")]
         public async Task<IActionResult> GetProblem(int id)
         {
@@ -65,7 +69,7 @@ namespace Solve_Smart_Backend.Controllers
             }
             return Ok(problem);
         }
-
+        [Authorize(Policy = "Manager")]
         [HttpPut("updateProblem/{id}")]
         public async Task<IActionResult> UpdateProblem(int id, [FromBody] ProblemDto problemDto)
         {
@@ -93,7 +97,7 @@ namespace Solve_Smart_Backend.Controllers
 
             return Ok(new { message = "تم تحديث المشكلة بنجاح" });
         }
-
+        [Authorize(Policy = "Manager")]
         [HttpDelete("deleteProblem/{id}")]
         public async Task<IActionResult> DeleteProblem(int id)
         {

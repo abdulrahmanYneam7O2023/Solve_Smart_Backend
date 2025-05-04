@@ -1,14 +1,15 @@
-﻿    using Microsoft.AspNetCore.Authentication.JwtBearer;
-    using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-    using Microsoft.IdentityModel.Tokens;
-    using Solve_Smart_Backend.DDL.Context;
-    using Solve_Smart_Backend.DDL.Models;
-    using Solve_Smart_Backend.Interface;
-    using Solve_Smart_Backend.Service;
-    using System;
-    using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Solve_Smart_Backend.DDL.Context;
+using Solve_Smart_Backend.DDL.Models;
+using Solve_Smart_Backend.Interface;
+using Solve_Smart_Backend.Service;
+using System;
+using System.Security.Claims;
+using System.Text;
 
 
     var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +42,8 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.RequireHttpsMetadata = false;
+    options.SaveToken= true;
     var jwtSettings = builder.Configuration.GetSection("Jwt");
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -52,8 +55,10 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(jwtSettings["Key"])),
-        ClockSkew = TimeSpan.Zero // إزالة التخطي الافتراضي للوقت (5 دقائق)
+        ClockSkew = TimeSpan.Zero 
+
     };
+    
 
     options.Events = new JwtBearerEvents
     {
@@ -66,6 +71,16 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Manager", policy =>
+        policy
+        .RequireClaim(ClaimTypes.Role, "Manager")
+        .RequireClaim("Jobtitle", "Management"));
+
+
 });
 builder.Services.AddHttpClient<IAiService, AiService>();
 
@@ -109,42 +124,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 var app = builder.Build();
 
 
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    string[] roleNames = { "Admin", "User" };
-    foreach (var roleName in roleNames)
-    {
-        var roleExist = await roleManager.RoleExistsAsync(roleName);
-        if (!roleExist)
-        {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
 
-    // إنشاء مستخدم مسؤول افتراضي إذا لم يكن موجودًا
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<Users>>();
-    var adminEmail = "admin@solvesmart.com";
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-
-    if (adminUser == null)
-    {
-        var admin = new Users
-        {
-            UserName = "admin",
-            Email = adminEmail,
-            jobtitle = "System Administrator",
-            EmailConfirmed = true
-        };
-
-        var result = await userManager.CreateAsync(admin, "Admin@123");
-
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(admin, "Admin");
-        }
-    }
-}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
     {

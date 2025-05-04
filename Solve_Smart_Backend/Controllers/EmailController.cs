@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ namespace Solve_Smart_Backend.Controllers
         {
             _emailSender = emailSender;
         }
+        [Authorize]
         [HttpPost("SendEmail")]
         public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)
         {

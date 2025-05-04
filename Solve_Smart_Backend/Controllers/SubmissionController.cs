@@ -54,6 +54,7 @@ namespace Solve_Smart_Backend.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        [Authorize]
 
         [HttpPost("SubmitCode")]
         public async Task<IActionResult> SubmitCode([FromBody] SubmissionDto submissionDto)

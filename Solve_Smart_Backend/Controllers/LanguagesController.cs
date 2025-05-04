@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Solve_Smart_Backend.DDL.Context;
@@ -18,6 +19,7 @@ namespace Solve_Smart_Backend.Controllers
             _config = config;
             _context = solvedbcontext;
         }
+        [Authorize(Policy = "Manager")]
         [HttpPost("addLanguage")]
         public async Task<IActionResult> AddLanguage([FromBody] LanguagesDto languagesDto)
         {
@@ -29,6 +31,7 @@ namespace Solve_Smart_Backend.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+        [Authorize(Policy = "Manager")]
         [HttpGet("getLanguages")]
         public async Task<IActionResult> GetLanguages()
         {
@@ -45,6 +48,7 @@ namespace Solve_Smart_Backend.Controllers
             }
             return Ok(language);
         }
+        [Authorize(Policy = "Manager")]
         [HttpPut("updateLanguage/{id}")]
         public async Task<IActionResult> UpdateLanguage(int id, [FromBody] LanguagesDto languagesDto)
         {
@@ -57,6 +61,7 @@ namespace Solve_Smart_Backend.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+        [Authorize(Policy = "Manager")]
         [HttpDelete("deleteLanguage/{id}")]
         public async Task<IActionResult> DeleteLanguage(int id)
         {
