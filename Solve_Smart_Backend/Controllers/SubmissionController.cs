@@ -168,7 +168,7 @@ namespace Solve_Smart_Backend.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = aiResult.IsCorrect ? "تم تقديم الحل بنجاح" : "محاولة غير ناجحة، حاول مرة أخرى",
+                    message = aiResult.IsCorrect ? "Done" : "INCORRECT TRY AGAIN",
                     submissionId = submission.SId,
                     aiEvaluation = new
                     {

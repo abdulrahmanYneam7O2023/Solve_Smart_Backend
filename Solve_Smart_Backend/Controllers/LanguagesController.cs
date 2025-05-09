@@ -31,13 +31,14 @@ namespace Solve_Smart_Backend.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
-        [Authorize(Policy = "Manager")]
+        [Authorize]
         [HttpGet("getLanguages")]
         public async Task<IActionResult> GetLanguages()
         {
             var languages = await _context.languages.ToListAsync();
             return Ok(languages);
         }
+      
         [HttpGet("getLanguage/{id}")]
         public async Task<IActionResult> GetLanguage(int id)
         {

@@ -50,7 +50,7 @@ namespace Solve_Smart_Backend.Controllers
             return Ok(new { id = DbEmp.Id, message = "تمت إضافة المشكلة بنجاح" });
         }
 
-        [Authorize(Policy = "Manager")]
+        [Authorize]
         [HttpGet("getProblems")]
         public async Task<IActionResult> GetProblems()
         {
@@ -58,7 +58,7 @@ namespace Solve_Smart_Backend.Controllers
             return Ok(problems);
         }
 
-        [Authorize(Policy = "Manager")]
+        [Authorize]
         [HttpGet("getProblem/{id}")]
         public async Task<IActionResult> GetProblem(int id)
         {
@@ -69,7 +69,7 @@ namespace Solve_Smart_Backend.Controllers
             }
             return Ok(problem);
         }
-        [Authorize(Policy = "Manager")]
+        //[Authorize(Policy = "Manager")]
         [HttpPut("updateProblem/{id}")]
         public async Task<IActionResult> UpdateProblem(int id, [FromBody] ProblemDto problemDto)
         {
