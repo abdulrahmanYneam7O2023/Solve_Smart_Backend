@@ -82,8 +82,12 @@ builder.Services.AddAuthorization(options =>
 
 });
 builder.Services.AddHttpClient<IAiService, AiService>();
+builder.Services.AddScoped<IAiServiceProblems, AiServiceProblems>();
 
-    builder.Services.AddAuthorization();
+// تسجيل HttpClient المطلوب لـ AiServiceProblems
+builder.Services.AddHttpClient<IAiServiceProblems, AiServiceProblems>();
+
+builder.Services.AddAuthorization();
     builder.Services.AddHttpClient();
 
 
@@ -113,8 +117,8 @@ builder.Services.AddEndpointsApiExplorer();
     {
         options.AddPolicy("AllowAll", policy =>
         {
-            policy.WithOrigins("http://localhost:4200")
-            
+            policy.AllowAnyOrigin()
+
                   .AllowAnyMethod()
                   .AllowAnyHeader();
         });
